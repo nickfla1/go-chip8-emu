@@ -1,7 +1,18 @@
 package main
 
-import "fmt"
+import (
+	"chip8-emu/chip8"
+	"os"
+)
 
 func main() {
-	fmt.Println("hello, world")
+	bytes, _ := os.ReadFile("./programs/ibm.ch8")
+
+	var cpu chip8.CPU
+	cpu.Initialize()
+	cpu.LoadProgram(&bytes)
+
+	for {
+		cpu.Tick()
+	}
 }
