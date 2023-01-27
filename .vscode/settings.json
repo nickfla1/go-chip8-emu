@@ -1,0 +1,15 @@
+{
+  "gopls": {
+    "ui.semanticTokens": true
+  },
+  "go.formatTool": "goimports",
+  "go.lintOnSave": "package",
+  "go.autocompleteUnimportedPackages": true,
+  "[go]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": true
+    }
+  },
+  "cSpell.words": ["usbc"]
+}
