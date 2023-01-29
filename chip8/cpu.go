@@ -27,6 +27,10 @@ type CPU struct {
 	soundTimer uint8
 }
 
+func NewCPU() CPU {
+	return CPU{}
+}
+
 func (c *CPU) Initialize() {
 	c.PC = PROGRAM_START
 }

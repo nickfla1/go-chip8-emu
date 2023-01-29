@@ -66,7 +66,7 @@ func main() {
 
 	bytes, _ := os.ReadFile("./programs/ibm.ch8")
 
-	cpu := chip8.CPU{}
+	cpu := chip8.NewCPU()
 	cpu.Initialize()
 	cpu.LoadProgram(&bytes)
 
