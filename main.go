@@ -11,14 +11,17 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
+const (
+	WINDOW_WIDTH  = 540
+	WINDOW_HEIGHT = 360
+)
+
 type Game struct {
-	ticks int
-	cpu   *chip8.CPU
-	img   *ebiten.Image
+	cpu *chip8.CPU
+	img *ebiten.Image
 }
 
 func (g *Game) Update() error {
-	g.ticks++
 	g.cpu.Tick()
 
 	for y := 0; y < chip8.SCREEN_HEIGHT; y++ {
@@ -36,31 +39,30 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Ticks: %d", g.ticks), 0, 0)
-	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("PC: %4X", g.cpu.PC), 0, 16)
-	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("SP: %4X", g.cpu.SP), 0, 32)
-	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("I : %4X", g.cpu.Index), 0, 48)
+	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("PC: %4X", g.cpu.PC), 8, 16)
+	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("SP: %4X", g.cpu.SP), 8, 32)
+	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("I : %4X", g.cpu.Index), 8, 48)
 
 	for i, v := range g.cpu.Registers {
-		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("V%1X: %4X", i, v), 0, 64+(i*16))
+		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("V%1X: %4X", i, v), 8, 64+(i*16))
 	}
 
 	m := ebiten.GeoM{}
-	m.Scale(4, 4)
-	m.Translate(96, 8)
+	m.Scale(6, 6)
+	m.Translate(96, 16)
 	screen.DrawImage(g.img, &ebiten.DrawImageOptions{
 		GeoM: m,
 	})
 }
 
 func (g *Game) Layout(w, h int) (screenWidth, screenHeight int) {
-	return 640, 480
+	return WINDOW_WIDTH, WINDOW_HEIGHT
 }
 
 func main() {
-	ebiten.SetWindowSize(640, 480)
+	ebiten.SetWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT)
 	ebiten.SetWindowTitle("Chip 8")
-	ebiten.SetTPS(4)
+	ebiten.SetTPS(1000)
 
 	bytes, _ := os.ReadFile("./programs/ibm.ch8")
 
