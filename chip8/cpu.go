@@ -1,7 +1,6 @@
 package chip8
 
 import (
-	"fmt"
 	"math/rand"
 )
 
@@ -21,9 +20,9 @@ type CPU struct {
 	SP         uint8
 	Index      uint16
 	Registers  [REGISTERS]uint8
-	memory     [MEMORY_SIZE]uint16
+	memory     [MEMORY_SIZE]uint8
 	stack      [STACK_SIZE]uint16
-	screen     [SCREEN_WIDTH][SCREEN_HEIGHT]uint8
+	Screen     [SCREEN_WIDTH][SCREEN_HEIGHT]uint8
 	delayTimer uint8
 	soundTimer uint8
 }
@@ -33,24 +32,22 @@ func (c *CPU) Initialize() {
 }
 
 func (c *CPU) LoadProgram(program *[]byte) {
-	for i := 0; i < len(*program); i += 2 {
+	for i := 0; i < len(*program); i++ {
 		if i+PROGRAM_START > MEMORY_SIZE {
 			break
 		}
 
-		hi := (*program)[i]
-		lo := (*program)[i+1]
-		c.memory[PROGRAM_START+i] = uint16(hi)<<8 | uint16(lo)
+		c.memory[PROGRAM_START+i] = (*program)[i]
 	}
 }
 
 func (c *CPU) Tick() {
-	op := c.memory[c.PC]
+	opHi := c.memory[c.PC]
+	opLo := c.memory[c.PC+1]
+	op := uint16(opHi)<<8 | uint16(opLo)
 
 	vx := op & 0x0f00 >> 8
 	vy := op & 0x00f0 >> 4
-
-	fmt.Printf("%4X : %4X\n", c.PC, op)
 
 	c.PC += 2
 
@@ -129,7 +126,34 @@ func (c *CPU) Tick() {
 	case 0xc000: // CXNN: Random & nn
 		c.Registers[vx] = uint8(rand.Uint32()) & uint8(op&0xff)
 	case 0xd000: // DXYN: Display sprite
-		// TODO: display
+		n := uint8(op & 0xf)
+		x := c.Registers[vx] % SCREEN_WIDTH
+		y := c.Registers[vy] % SCREEN_HEIGHT
+		c.Registers[0xf] = 0x0
+
+		for row := uint8(0); row < n; row++ {
+			sprite := c.memory[c.Index+uint16(row)]
+
+			py := y + row
+			if py > SCREEN_HEIGHT {
+				break
+			}
+
+			for col := uint8(0); col < 8; col++ {
+				px := x + col
+				if px > SCREEN_WIDTH {
+					break
+				}
+
+				isSet := sprite&(1<<(7-col)) != 0
+				if c.Screen[px][py] == 0x1 && isSet {
+					c.Screen[px][py] = 0x0
+					c.Registers[0xf] = 0x1
+				} else if c.Screen[px][py] == 0x0 && isSet {
+					c.Screen[px][py] = 0x1
+				}
+			}
+		}
 	case 0xe00:
 		switch op & 0xff {
 		case 0x009e: // EX9E: Skip if key vx is pressed
@@ -155,16 +179,16 @@ func (c *CPU) Tick() {
 			u := c.Registers[vx] % 10
 			d := (c.Registers[vx] / 10) % 10
 			h := (c.Registers[vx] / 100) % 10
-			c.memory[c.Index] = uint16(h)
-			c.memory[c.Index+1] = uint16(d)
-			c.memory[c.Index+2] = uint16(u)
+			c.memory[c.Index] = h
+			c.memory[c.Index+1] = d
+			c.memory[c.Index+2] = u
 		case 0x0055: // FX55: Store registers into memory
 			for i := uint16(0); i < vx; i++ {
-				c.memory[c.Index+i] = uint16(c.Registers[i])
+				c.memory[c.Index+i] = c.Registers[i]
 			}
 		case 0x0065: // FX66: Load registers from memory
 			for i := uint16(0); i < vx; i++ {
-				c.Registers[i] = uint8(c.memory[c.Index+i])
+				c.Registers[i] = c.memory[c.Index+i]
 			}
 		}
 	}
