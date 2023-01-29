@@ -32,13 +32,7 @@ func (c *CPU) Initialize() {
 }
 
 func (c *CPU) LoadProgram(program *[]byte) {
-	for i := 0; i < len(*program); i++ {
-		if i+PROGRAM_START > MEMORY_SIZE {
-			break
-		}
-
-		c.memory[PROGRAM_START+i] = (*program)[i]
-	}
+	copy(c.memory[PROGRAM_START:], *program)
 }
 
 func (c *CPU) Tick() {
