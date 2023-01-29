@@ -3,6 +3,7 @@ package main
 import (
 	"chip8-emu/chip8"
 	"fmt"
+	"image/color"
 	"log"
 	"os"
 
@@ -13,11 +14,23 @@ import (
 type Game struct {
 	ticks int
 	cpu   *chip8.CPU
+	img   *ebiten.Image
 }
 
 func (g *Game) Update() error {
 	g.ticks++
 	g.cpu.Tick()
+
+	for y := 0; y < chip8.SCREEN_HEIGHT; y++ {
+		for x := 0; x < chip8.SCREEN_WIDTH; x++ {
+			c := color.White
+			if g.cpu.Screen[x][y] == 1 {
+				c = color.Black
+			}
+
+			g.img.Set(x, y, c)
+		}
+	}
 
 	return nil
 }
@@ -31,6 +44,13 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	for i, v := range g.cpu.Registers {
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("V%1X: %4X", i, v), 0, 64+(i*16))
 	}
+
+	m := ebiten.GeoM{}
+	m.Scale(4, 4)
+	m.Translate(96, 8)
+	screen.DrawImage(g.img, &ebiten.DrawImageOptions{
+		GeoM: m,
+	})
 }
 
 func (g *Game) Layout(w, h int) (screenWidth, screenHeight int) {
@@ -50,6 +70,7 @@ func main() {
 
 	game := Game{
 		cpu: &cpu,
+		img: ebiten.NewImage(chip8.SCREEN_WIDTH, chip8.SCREEN_HEIGHT),
 	}
 
 	if err := ebiten.RunGame(&game); err != nil {
