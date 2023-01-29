@@ -53,6 +53,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	screen.DrawImage(g.img, &ebiten.DrawImageOptions{
 		GeoM: m,
 	})
+
+	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Delay timer: %d", g.cpu.DelayTimer), 96, 256)
+	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Sound timer: %d", g.cpu.SoundTimer), 96, 272)
 }
 
 func (g *Game) Layout(w, h int) (screenWidth, screenHeight int) {

@@ -21,11 +21,12 @@ type CPU struct {
 	SP         uint8
 	Index      uint16
 	Registers  [REGISTERS]uint8
-	memory     [MEMORY_SIZE]uint8
-	stack      [STACK_SIZE]uint16
+	DelayTimer uint8
+	SoundTimer uint8
 	Screen     [SCREEN_WIDTH][SCREEN_HEIGHT]uint8
-	delayTimer uint8
-	soundTimer uint8
+
+	memory [MEMORY_SIZE]uint8
+	stack  [STACK_SIZE]uint16
 }
 
 func NewCPU() CPU {
@@ -164,13 +165,13 @@ func (c *CPU) Tick() {
 	case 0xf000:
 		switch op & 0xff {
 		case 0x0007: // FX07: Set vx to delay timer
-			c.Registers[vx] = uint8(c.delayTimer)
+			c.Registers[vx] = uint8(c.DelayTimer)
 		case 0x000a: // FX0A: Store key into vx
 			// TODO: keyboard
 		case 0x0015: // FX15: Load vx into delay timer
-			c.delayTimer = c.Registers[vx]
+			c.DelayTimer = c.Registers[vx]
 		case 0x0018: // FX18: Load vx into sound timer
-			c.soundTimer = c.Registers[vx]
+			c.SoundTimer = c.Registers[vx]
 		case 0x001e: // FX1E: Set index + vx
 			c.Index += uint16(c.Registers[vx])
 		case 0x0029: // FX29: Set index to sprite
