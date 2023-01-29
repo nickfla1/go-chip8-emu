@@ -72,6 +72,7 @@ func main() {
 	cpu := chip8.NewCPU()
 	cpu.Initialize()
 	cpu.LoadProgram(&bytes)
+	cpu.StartTimers()
 
 	game := Game{
 		cpu: &cpu,
@@ -81,4 +82,6 @@ func main() {
 	if err := ebiten.RunGame(&game); err != nil {
 		log.Fatal(err)
 	}
+
+	cpu.Done()
 }

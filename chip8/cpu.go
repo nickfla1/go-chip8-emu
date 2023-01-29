@@ -2,6 +2,7 @@ package chip8
 
 import (
 	"math/rand"
+	"time"
 )
 
 const (
@@ -25,17 +26,44 @@ type CPU struct {
 	SoundTimer uint8
 	Screen     [SCREEN_WIDTH][SCREEN_HEIGHT]uint8
 
-	memory [MEMORY_SIZE]uint8
-	stack  [STACK_SIZE]uint16
+	memory    [MEMORY_SIZE]uint8
+	stack     [STACK_SIZE]uint16
+	ticker    *time.Ticker
+	doneEvent chan bool
 }
 
 func NewCPU() CPU {
-	return CPU{}
+	return CPU{
+		ticker:    time.NewTicker(16 * time.Millisecond),
+		doneEvent: make(chan bool),
+	}
 }
 
 func (c *CPU) Initialize() {
 	c.PC = PROGRAM_START
 	c.loadFont()
+}
+
+func (c *CPU) StartTimers() {
+	go func() {
+		for {
+			select {
+			case <-c.doneEvent:
+				return
+			case <-c.ticker.C:
+				if c.DelayTimer > 0 {
+					c.DelayTimer--
+				}
+				if c.SoundTimer > 0 {
+					c.SoundTimer--
+				}
+			}
+		}
+	}()
+}
+
+func (c *CPU) Done() {
+	c.doneEvent <- true
 }
 
 func (c *CPU) LoadProgram(program *[]byte) {
