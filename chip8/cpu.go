@@ -13,6 +13,7 @@ const (
 	SCREEN_HEIGHT = 32
 
 	PROGRAM_START = 0x200
+	FONT_LOCATION = 0x50
 )
 
 type CPU struct {
@@ -173,7 +174,8 @@ func (c *CPU) Tick() {
 		case 0x001e: // FX1E: Set index + vx
 			c.Index += uint16(c.Registers[vx])
 		case 0x0029: // FX29: Set index to sprite
-			// TODO: display
+			char := c.Registers[vx]
+			c.Index = uint16(FONT_LOCATION + (char & 0xf))
 		case 0x0033: // FX33: Store BCD representation
 			u := c.Registers[vx] % 10
 			d := (c.Registers[vx] / 10) % 10
@@ -213,5 +215,5 @@ func (c *CPU) loadFont() {
 		0xF0, 0x80, 0xF0, 0x80, 0x80, // F
 	}
 
-	copy(c.memory[0x50:], font)
+	copy(c.memory[FONT_LOCATION:], font)
 }
